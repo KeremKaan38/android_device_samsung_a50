@@ -1,4 +1,4 @@
-# TWRP Device Tree for the Samsung Galaxy A50 (a50dd)
+# PBRP Device Tree for the Samsung Galaxy A50 (a50dd)
 
 The Galaxy A50 (codenamed _"a50dd"_) is an upper-mid-range smartphone from Samsung.
 
@@ -37,29 +37,29 @@ Available at [FreshROMs/android_kernel_samsung_exynos9610_mint](https://github.c
 
 ## How to build
 
-This device tree was tested and is fully compatible with [minimal-manifest-twrp](https://github.com/minimal-manifest-twrp/platform_manifest_twrp_aosp).
+This device tree was tested and is fully compatible with [manifest_pb](https://github.com/PitchBlackRecoveryProject/manifest_pb).
 
-1. Set up the build environment following the instructions [here](https://github.com/minimal-manifest-twrp/platform_manifest_twrp_aosp/blob/twrp-12.1/README.md#getting-started)
+1. Set up the build environment following the instructions [here](https://github.com/PitchBlackRecoveryProject/manifest_pb/blob/android-12.1/README.md#how-to-build)
 
 2. In the root folder of the fetched repo, clone the device tree:
 
 ```bash
-git clone https://github.com/PeterKnecht93/android_device_samsung_a50dd -b twrp-12.1 device/samsung/a50dd
+git clone https://github.com/PeterKnecht93/android_device_samsung_a50dd -b pbrp-12.1 device/samsung/a50dd
 ```
 
 3. To build:
 
 ```bash
 . build/envsetup.sh
-lunch twrp_a50dd-eng
-mka recoveryimage
+lunch pb_a50dd-eng
+mka pbrp
 ```
 
 ## Copyright
 
 ```
 #
-# Copyright (C) 2024 The TWRP Open Source Project
+# Copyright (C) 2020 PitchBlack Recovery Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
