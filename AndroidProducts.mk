@@ -6,7 +6,7 @@
 #
 
 PRODUCT_MAKEFILES := \
-    $(LOCAL_DIR)/pb_a50dd.mk
+    $(LOCAL_DIR)/pb_a50.mk
 
 COMMON_LUNCH_CHOICES := \
-    pb_a50dd-eng
+    pb_a50-eng
