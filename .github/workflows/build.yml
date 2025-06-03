@@ -6,38 +6,46 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
+    - name: Checkout repository
+      uses: actions/checkout@v3
 
-      - name: Install dependencies
-        run: |
-          sudo apt update
-          sudo apt install -y bc bison build-essential curl flex g++-multilib \
-          gcc-multilib git gnupg gperf imagemagick libncurses5-dev libxml2 \
-          libssl-dev lzop pngcrush schedtool squashfs-tools xsltproc zip zlib1g-dev \
-          liblz4-tool
+    - name: Install dependencies
+      run: |
+        sudo apt update
+        sudo apt install -y bc bison build-essential curl flex g++-multilib \
+        gcc-multilib git gnupg gperf imagemagick libncurses5-dev libxml2 \
+        libssl-dev lzop pngcrush schedtool squashfs-tools xsltproc zip zlib1g-dev \
+        liblz4-tool
 
-      - name: Initialize PBRP source
-        run: |
-          mkdir -p pbrp
-          cd pbrp
-          repo init -u https://github.com/PitchBlackRecoveryProject/manifest.git -b twrp-12.1
-          repo sync -j$(nproc --all)
+    - name: Install repo tool
+      run: |
+        mkdir -p ~/bin
+        curl https://storage.googleapis.com/git-repo-downloads/repo > ~/bin/repo
+        chmod a+x ~/bin/repo
+        echo "$HOME/bin" >> $GITHUB_PATH
 
-      - name: Copy device tree
-        run: |
-          cp -r $GITHUB_WORKSPACE/device pbrp/device
+    - name: Initialize PBRP repo
+      run: |
+        mkdir -p pbrp
+        cd pbrp
+        repo init -u https://github.com/PitchBlackRecoveryProject/manifest.git -b twrp-12.1
+        repo sync -j$(nproc)
 
-      - name: Build recovery
-        run: |
-          cd pbrp
-          source build/envsetup.sh
-          lunch omni_a50-eng
-          make pbrp -j$(nproc --all)
+    - name: Copy device tree
+      run: |
+        cp -r $GITHUB_WORKSPACE/device pbrp/device
 
-      - name: Upload recovery image
-        uses: actions/upload-artifact@v2
-        with:
-          name: recovery.img
-          path: pbrp/out/target/product/a50/recovery.img
+    - name: Build recovery
+      run: |
+        cd pbrp
+        source build/envsetup.sh
+        lunch omni_a50-eng
+        make pbrp -j$(nproc)
+
+    - name: Upload recovery image
+      uses: actions/upload-artifact@v2
+      with:
+        name: recovery.img
+        path: pbrp/out/target/product/a50/recovery.img
