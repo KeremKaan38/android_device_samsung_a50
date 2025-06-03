@@ -7,36 +7,37 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout
-      uses: actions/checkout@v3
+      - name: Checkout
+        uses: actions/checkout@v3
 
-    - name: Install dependencies
-      run: |
-        sudo apt update
-        sudo apt install -y bc bison build-essential curl flex g++-multilib \
-        gcc-multilib git gnupg gperf imagemagick libncurses5-dev libxml2 \
-        libssl-dev lzop pngcrush schedtool squashfs-tools xsltproc zip zlib1g-dev \
-        liblz4-tool
+      - name: Install dependencies
+        run: |
+          sudo apt update
+          sudo apt install -y bc bison build-essential curl flex g++-multilib \
+          gcc-multilib git gnupg gperf imagemagick libncurses5-dev libxml2 \
+          libssl-dev lzop pngcrush schedtool squashfs-tools xsltproc zip zlib1g-dev \
+          liblz4-tool
 
-    - name: Initialize PBRP source
-      run: |
-        mkdir pbrp && cd pbrp
-        repo init -u https://github.com/PitchBlackRecoveryProject/manifest.git -b twrp-12.1
-        repo sync -j$(nproc --all)
+      - name: Initialize PBRP source
+        run: |
+          mkdir -p pbrp
+          cd pbrp
+          repo init -u https://github.com/PitchBlackRecoveryProject/manifest.git -b twrp-12.1
+          repo sync -j$(nproc --all)
 
-    - name: Copy device tree
-      run: |
-        cp -r $GITHUB_WORKSPACE/device pbrp/device
+      - name: Copy device tree
+        run: |
+          cp -r $GITHUB_WORKSPACE/device pbrp/device
 
-    - name: Build recovery
-      run: |
-        cd pbrp
-        source build/envsetup.sh
-        lunch omni_a50-eng
-        make pbrp -j$(nproc --all)
+      - name: Build recovery
+        run: |
+          cd pbrp
+          source build/envsetup.sh
+          lunch omni_a50-eng
+          make pbrp -j$(nproc --all)
 
-    - name: Upload recovery image
-      uses: actions/upload-artifact@v3
-      with:
-        name: recovery.img
-        path: pbrp/out/target/product/a50/recovery.img
+      - name: Upload recovery image
+        uses: actions/upload-artifact@v2
+        with:
+          name: recovery.img
+          path: pbrp/out/target/product/a50/recovery.img
