@@ -24,9 +24,3 @@ jobs:
           . build/envsetup.sh
           lunch pb_a50-eng
           mka pbrp
-
-      - name: Upload built recovery image
-        uses: actions/upload-artifact@v2
-        with:
-          name: recovery.img
-          path: out/target/product/a50/recovery.img
