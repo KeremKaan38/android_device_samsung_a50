@@ -25,7 +25,7 @@ jobs:
         sudo update-alternatives --set javac /usr/lib/jvm/java-8-openjdk-amd64/bin/javac
 
     - name: 📁 Kaynak Dizini Oluştur
-      run: mkdir $ROM_DIR && cd $ROM_DIR
+      run: mkdir $ROM_DIR
 
     - name: 📥 PBRP Manifestini İndir
       working-directory: ${{ env.ROM_DIR }}
@@ -45,15 +45,24 @@ jobs:
         lunch pb_${{ env.DEVICE_CODENAME }}-eng
         mka pbrp -j$(nproc --all)
 
-    - name: 📤 Derleme Sonucunu Arşivle
-      if: success()
+    - name: 📦 recovery.img'i Zip'le
       working-directory: ${{ env.ROM_DIR }}
       run: |
         mkdir -p $GITHUB_WORKSPACE/output
-        cp out/target/product/${{ env.DEVICE_CODENAME }}/recovery.img $GITHUB_WORKSPACE/output/ || true
+        if [ -f out/target/product/${{ env.DEVICE_CODENAME }}/recovery.img ]; then
+          cp out/target/product/${{ env.DEVICE_CODENAME }}/recovery.img $GITHUB_WORKSPACE/output/
+          cd $GITHUB_WORKSPACE/output
+          zip recovery_${{ env.DEVICE_CODENAME }}.zip recovery.img
+        else
+          echo "❌ recovery.img bulunamadı!"
+          exit 1
+        fi
 
-    - name: 📦 Artefaktı Yükle
-      uses: actions/upload-artifact@v3
+    - name: 🚀 GitHub Release Oluştur
+      uses: softprops/action-gh-release@v1
       with:
-        name: pbrp-a50-output
-        path: output/
+        name: PBRP Recovery A50
+        tag_name: a50-pbrp-latest
+        files: output/recovery_${{ env.DEVICE_CODENAME }}.zip
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
