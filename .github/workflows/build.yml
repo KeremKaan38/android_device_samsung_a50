@@ -5,22 +5,55 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
+
+    env:
+      ROM_DIR: pbrp
+      DEVICE_CODENAME: a50
 
     steps:
-      - name: Checkout source code
-        uses: actions/checkout@v3
+    - name: 📥 Gerekli Paketleri Kur
+      run: |
+        sudo apt update
+        sudo apt install -y git zip curl repo bc build-essential \
+        ccache libncurses5-dev libssl-dev unzip bison flex \
+        lib32libstdc++6 lib32z1 openjdk-8-jdk python2
 
-      - name: Install build dependencies
-        run: |
-          sudo apt update
-          sudo apt install -y bc bison build-essential curl flex g++-multilib \
-          gcc-multilib git gnupg gperf imagemagick libncurses5-dev libxml2 \
-          libssl-dev lzop pngcrush schedtool squashfs-tools xsltproc zip zlib1g-dev \
-          liblz4-tool
+    - name: 🛠️ Java 8'i Ayarla
+      run: |
+        sudo update-alternatives --set java /usr/lib/jvm/java-8-openjdk-amd64/jre/bin/java
+        sudo update-alternatives --set javac /usr/lib/jvm/java-8-openjdk-amd64/bin/javac
 
-      - name: Setup build environment and build PBRP
-        run: |
-          . build/envsetup.sh
-          lunch pb_a50-eng
-          mka pbrp
+    - name: 📁 Kaynak Dizini Oluştur
+      run: mkdir $ROM_DIR && cd $ROM_DIR
+
+    - name: 📥 PBRP Manifestini İndir
+      working-directory: ${{ env.ROM_DIR }}
+      run: |
+        repo init -u https://github.com/PitchBlackRecoveryProject/manifest_pb -b android-12.1
+        repo sync -j$(nproc --all)
+
+    - name: 📁 Cihaz Ağacını Klonla
+      working-directory: ${{ env.ROM_DIR }}
+      run: |
+        git clone https://github.com/PeterKnecht93/android_device_samsung_a50 -b pbrp-12.1 device/samsung/a50
+
+    - name: ⚙️ Ortamı Ayarla ve Derlemeye Hazırla
+      working-directory: ${{ env.ROM_DIR }}
+      run: |
+        source build/envsetup.sh
+        lunch pb_${{ env.DEVICE_CODENAME }}-eng
+        mka pbrp -j$(nproc --all)
+
+    - name: 📤 Derleme Sonucunu Arşivle
+      if: success()
+      working-directory: ${{ env.ROM_DIR }}
+      run: |
+        mkdir -p $GITHUB_WORKSPACE/output
+        cp out/target/product/${{ env.DEVICE_CODENAME }}/recovery.img $GITHUB_WORKSPACE/output/ || true
+
+    - name: 📦 Artefaktı Yükle
+      uses: actions/upload-artifact@v3
+      with:
+        name: pbrp-a50-output
+        path: output/
